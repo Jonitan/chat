@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="jonitan-chat",
-    version="0.2.0",
+    version="0.2.1",
     author="Yonatan Naisteter",
     author_email="skiba8150@gmail.com",
     description="Simple calculator implementation.",
