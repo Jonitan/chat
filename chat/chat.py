@@ -21,11 +21,10 @@ def chat():
     _validate_arguments(arguments['<remote-host>'], arguments['<local-port>'], arguments['<remote-port>'])
 
     loop = asyncio.get_event_loop()
-    receive_task = asyncio.Task(asyncio.start_server(_handle_session_receive_task, arguments['<remote-host>'],
-                                                     int(arguments['<local-port>'])))
-    transmit_task = asyncio.Task(_handle_session_transmit_task(arguments['<remote-host>'],
-                                                               int(arguments['<remote-port>']),
-                                                               arguments['--username']))
+    asyncio.Task(asyncio.start_server(_handle_session_receive_task, arguments['<remote-host>'],
+                                      int(arguments['<local-port>'])))
+    asyncio.Task(_handle_session_transmit_task(arguments['<remote-host>'], int(arguments['<remote-port>']),
+                                               arguments['--username']))
     loop.run_forever()
 
 
@@ -40,8 +39,8 @@ async def _handle_session_receive_task(reader, _):
         try:
             incoming_message = await reader.read(2048)
             print(incoming_message.decode())
-        except ConnectionResetError as e:
-            raise e
+        except ConnectionResetError:
+            # TODO: Connection lost, should close loop and then program or restart all.
 
 
 async def _handle_session_transmit_task(remote_host: str, remote_port: int, username: str):
@@ -53,14 +52,9 @@ async def _handle_session_transmit_task(remote_host: str, remote_port: int, user
             pass
 
     while True:
-        try:
-            outgoing_message = f'{username}: {await ainput()}'
-            writer.write(outgoing_message.encode())
-        except Exception as e:
-            writer.close()
-            print(e)
+        outgoing_message = f'{username}: {await ainput()}'
+        writer.write(outgoing_message.encode())
 
 
 if __name__ == '__main__':
     chat()
-
